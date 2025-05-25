@@ -1,0 +1,313 @@
+local LunarLib = {}
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function Create(instType, props)
+    local inst = Instance.new(instType)
+    for k, v in pairs(props) do
+        inst[k] = v
+    end
+    return inst
+end
+
+-- Tema padrão
+local themes = {
+    Light = {
+        BackgroundColor = Color3.fromRGB(237, 201, 175),
+        TextColor = Color3.new(0, 0, 0),
+        AccentColor = Color3.fromRGB(200, 170, 140)
+    },
+    Dark = {
+        BackgroundColor = Color3.fromRGB(30, 30, 30),
+        TextColor = Color3.new(1, 1, 1),
+        AccentColor = Color3.fromRGB(100, 90, 80)
+    }
+}
+
+function LunarLib:CreateWindow(title, themeName)
+    local window = {}
+
+    local theme = themes[themeName] or themes.Light
+
+    local ScreenGui = Create("ScreenGui", {
+        Name = "LunarLibGui",
+        ResetOnSpawn = false,
+        Parent = game.CoreGui
+    })
+
+    local MainFrame = Create("Frame", {
+        Size = UDim2.new(0, 450, 0, 400),
+        Position = UDim2.new(0.5, -225, 0.5, -200),
+        BackgroundColor3 = theme.BackgroundColor,
+        BorderSizePixel = 0,
+        Parent = ScreenGui
+    })
+
+    -- Barra de título
+    local TitleBar = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 50),
+        BackgroundColor3 = theme.AccentColor,
+        Parent = MainFrame
+    })
+
+    -- Logo Lua (simplificada)
+    local Logo = Create("TextLabel", {
+        Text = "🌙",
+        Font = Enum.Font.GothamBlack,
+        TextSize = 28,
+        TextColor3 = theme.TextColor,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 5),
+        Size = UDim2.new(0, 40, 0, 40),
+        Parent = TitleBar
+    })
+
+    local TitleLabel = Create("TextLabel", {
+        Text = title or "Lunar Library",
+        Font = Enum.Font.GothamBold,
+        TextSize = 24,
+        TextColor3 = theme.TextColor,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 60, 0, 10),
+        Size = UDim2.new(0, 200, 0, 30),
+        Parent = TitleBar
+    })
+
+    -- Botão fechar
+    local CloseButton = Create("TextButton", {
+        Text = "X",
+        Font = Enum.Font.GothamBold,
+        TextSize = 24,
+        TextColor3 = theme.TextColor,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -40, 0, 5),
+        Size = UDim2.new(0, 30, 0, 40),
+        Parent = TitleBar
+    })
+
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    -- Tornar a janela arrastável
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPos
+
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                          startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    -- Container de tabs
+    local TabsContainer = Create("Frame", {
+        Size = UDim2.new(1, 0, 1, -50),
+        Position = UDim2.new(0, 0, 0, 50),
+        BackgroundTransparency = 1,
+        Parent = MainFrame
+    })
+
+    -- Navegação de abas
+    local TabsButtonsFrame = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 40),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = theme.AccentColor,
+        Parent = TabsContainer
+    })
+
+    local tabs = {}
+    local selectedTab
+
+    function window:CreateTab(name)
+        local tab = {}
+
+        local TabButton = Create("TextButton", {
+            Text = name,
+            Font = Enum.Font.Gotham,
+            TextSize = 20,
+            TextColor3 = theme.TextColor,
+            BackgroundColor3 = theme.BackgroundColor,
+            Size = UDim2.new(0, 120, 1, 0),
+            Parent = TabsButtonsFrame
+        })
+
+        local TabContent = Create("ScrollingFrame", {
+            Size = UDim2.new(1, 0, 1, -40),
+            Position = UDim2.new(0, 0, 0, 40),
+            BackgroundTransparency = 1,
+            ScrollBarThickness = 6,
+            Parent = TabsContainer,
+            Visible = false
+        })
+
+        function tab:AddButton(text, callback, customButton)
+            local button = customButton or Create("TextButton", {
+                Text = text,
+                Size = UDim2.new(0, 200, 0, 40),
+                BackgroundColor3 = theme.AccentColor,
+                TextColor3 = theme.TextColor,
+                Font = Enum.Font.Gotham,
+                Parent = TabContent
+            })
+            button.MouseButton1Click:Connect(function()
+                pcall(callback)
+            end)
+        end
+
+        function tab:AddToggle(text, callback, customToggle)
+            local toggled = false
+            local toggleButton = customToggle or Create("TextButton", {
+                Text = text .. ": Off",
+                Size = UDim2.new(0, 200, 0, 40),
+                BackgroundColor3 = theme.AccentColor,
+                TextColor3 = theme.TextColor,
+                Font = Enum.Font.Gotham,
+                Parent = TabContent
+            })
+            toggleButton.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                toggleButton.Text = text .. ": " .. (toggled and "On" or "Off")
+                pcall(callback, toggled)
+            end)
+        end
+
+        function tab:AddSlider(text, min, max, callback, customSlider)
+            local sliderVal = min
+            local label = Create("TextLabel", {
+                Text = text .. ": " .. sliderVal,
+                Size = UDim2.new(0, 200, 0, 20),
+                BackgroundTransparency = 1,
+                TextColor3 = theme.TextColor,
+                Font = Enum.Font.Gotham,
+                Parent = TabContent
+            })
+
+            local slider = customSlider or Create("Frame", {
+                Size = UDim2.new(0, 200, 0, 20),
+                BackgroundColor3 = theme.AccentColor,
+                Parent = TabContent
+            })
+
+            local fill = Create("Frame", {
+                Size = UDim2.new(0, 0, 1, 0),
+                BackgroundColor3 = theme.TextColor,
+                Parent = slider
+            })
+
+            slider.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local function update(input)
+                        local pos = math.clamp(input.Position.X - slider.AbsolutePosition.X, 0, slider.AbsoluteSize.X)
+                        fill.Size = UDim2.new(pos / slider.AbsoluteSize.X, 0, 1, 0)
+                        sliderVal = math.floor(min + (max - min) * (pos / slider.AbsoluteSize.X))
+                        label.Text = text .. ": " .. sliderVal
+                        pcall(callback, sliderVal)
+                    end
+
+                    update(input)
+
+                    local moveConn
+                    moveConn = UserInputService.InputChanged:Connect(function(moveInput)
+                        if moveInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            update(moveInput)
+                        end
+                    end)
+
+                    local endConn
+                    endConn = UserInputService.InputEnded:Connect(function(endInput)
+                        if endInput.UserInputType == Enum.UserInputType.MouseButton1 then
+                            moveConn:Disconnect()
+                            endConn:Disconnect()
+                        end
+                    end)
+                end
+            end)
+        end
+
+        function tab:AddDropdown(text, options, callback)
+            local dropdownOpen = false
+
+            local dropdownButton = Create("TextButton", {
+                Text = text,
+                Size = UDim2.new(0, 200, 0, 40),
+                BackgroundColor3 = theme.AccentColor,
+                TextColor3 = theme.TextColor,
+                Font = Enum.Font.Gotham,
+                Parent = TabContent
+            })
+
+            local dropdownFrame = Create("Frame", {
+                Size = UDim2.new(0, 200, 0, 0),
+                BackgroundColor3 = theme.BackgroundColor,
+                Position = UDim2.new(0, 0, 1, 0),
+                ClipsDescendants = true,
+                Parent = dropdownButton
+            })
+
+            local UIListLayout = Create("UIListLayout", {
+                Parent = dropdownFrame,
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+
+            local function toggleDropdown()
+                dropdownOpen = not dropdownOpen
+                if dropdownOpen then
+                    dropdownFrame:TweenSize(UDim2.new(0, 200, 0, #options * 30), "Out", "Quad", 0.3, true)
+                else
+                    dropdownFrame:TweenSize(UDim2.new(0, 200, 0, 0), "Out", "Quad", 0.3, true)
+                end
+            end
+
+            dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+
+            for i, option in ipairs(options) do
+                local optionButton = Create("TextButton", {
+                    Text = option,
+                    Size = UDim2.new(1, 0, 0, 30),
+                    BackgroundColor3 = theme.AccentColor,
+                    TextColor3 = theme.TextColor,
+                    Font = Enum.Font.Gotham,
+                    Parent = dropdownFrame
+                })
+                optionButton.MouseButton1Click:Connect(function()
+                    dropdownButton.Text = option
+                    pcall(callback, option)
+                    toggleDropdown()
+                end)
+            end
+        end
+
+        function tab:AddTextbox(placeholder, callback)
+            local textbox = Create("TextBox", {
+                PlaceholderText = placeholder or "",
+                Size = UDim2.new(0, 200, 0, 40),
+                BackgroundColor3 = theme.AccentColor,
+                TextColor3 = theme.TextColor,
+                Font = Enum.Font.Gotham,
