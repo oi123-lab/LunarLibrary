@@ -2,101 +2,173 @@ local LunarLib = {}
 
 function LunarLib:CreateWindow(title, theme)
     local ScreenGui = Instance.new("ScreenGui")
-    local Frame = Instance.new("Frame")
-    local UICorner = Instance.new("UICorner")
-    local Title = Instance.new("TextLabel")
-    local CloseButton = Instance.new("TextButton")
-    local MinimizeButton = Instance.new("TextButton")
-
     ScreenGui.Name = "LunarLibraryUI"
     ScreenGui.Parent = game.CoreGui
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    Frame.Parent = ScreenGui
-    Frame.BackgroundColor3 = Color3.fromRGB(194, 178, 128) -- Cor da areia
-    Frame.Position = UDim2.new(0.3, 0, 0.3, 0)
-    Frame.Size = UDim2.new(0, 300, 0, 200)
-    Frame.Active = true
-    Frame.Draggable = true
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = Color3.fromRGB(194, 178, 128) -- Cor da areia
+    MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 500, 0, 400)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
 
+    local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 12)
-    UICorner.Parent = Frame
+    UICorner.Parent = MainFrame
 
-    Title.Parent = Frame
-    Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, -60, 0, 50)
-    Title.Position = UDim2.new(0, 10, 0, 0)
-    Title.Font = Enum.Font.SourceSansBold
-    Title.Text = title or "Lunar Library"
-    Title.TextColor3 = Color3.new(0, 0, 0)
-    Title.TextScaled = true
+    -- Título
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Parent = MainFrame
+    TitleLabel.Size = UDim2.new(1, 0, 0, 50)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title or "Lunar Library"
+    TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.TextColor3 = Color3.new(0, 0, 0)
+    TitleLabel.TextScaled = true
 
-    -- Botão Fechar
-    CloseButton.Parent = Frame
-    CloseButton.Size = UDim2.new(0, 30, 0, 30)
-    CloseButton.Position = UDim2.new(1, -35, 0, 5)
-    CloseButton.Text = "X"
-    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-    CloseButton.TextColor3 = Color3.new(0, 0, 0)
-    CloseButton.Font = Enum.Font.SourceSansBold
-    CloseButton.TextScaled = true
+    -- Tabs
+    local TabsFrame = Instance.new("Frame")
+    TabsFrame.Name = "Tabs"
+    TabsFrame.Parent = MainFrame
+    TabsFrame.BackgroundColor3 = Color3.fromRGB(210, 180, 140)
+    TabsFrame.Position = UDim2.new(0, 0, 0, 50)
+    TabsFrame.Size = UDim2.new(0, 120, 1, -50)
 
-    -- Botão Minimizar
-    MinimizeButton.Parent = Frame
-    MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-    MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
-    MinimizeButton.Text = "_"
-    MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 255, 150)
-    MinimizeButton.TextColor3 = Color3.new(0, 0, 0)
-    MinimizeButton.Font = Enum.Font.SourceSansBold
-    MinimizeButton.TextScaled = true
+    -- Conteúdo
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Name = "Content"
+    ContentFrame.Parent = MainFrame
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
+    ContentFrame.Position = UDim2.new(0, 130, 0, 50)
+    ContentFrame.Size = UDim2.new(1, -140, 1, -60)
+
+    -- Minimizar botão
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Parent = ScreenGui
+    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+    ToggleButton.Position = UDim2.new(0, 10, 0, 10) -- Canto da tela
+    ToggleButton.Text = "-"
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 150)
+    ToggleButton.TextColor3 = Color3.new(0, 0, 0)
+    ToggleButton.Font = Enum.Font.SourceSansBold
+    ToggleButton.TextScaled = true
+    ToggleButton.Active = true
+    ToggleButton.Draggable = true
 
     local minimized = false
-    local originalSize = Frame.Size
-
-    MinimizeButton.MouseButton1Click:Connect(function()
+    ToggleButton.MouseButton1Click:Connect(function()
         minimized = not minimized
+        MainFrame.Visible = not minimized
         if minimized then
-            Frame.Size = UDim2.new(0, 300, 0, 50)
+            ToggleButton.Text = "+"
         else
-            Frame.Size = originalSize
+            ToggleButton.Text = "-"
         end
     end)
 
-    CloseButton.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
-
     local window = {}
-    window.Frame = Frame
 
-    function window:CreateTab(tabname)
-        local Button = Instance.new("TextButton")
-        Button.Parent = Frame
-        Button.BackgroundColor3 = Color3.fromRGB(210, 180, 140)
-        Button.Size = UDim2.new(0, 280, 0, 40)
-        Button.Position = UDim2.new(0, 10, 0, 60)
-        Button.Text = tabname or "Nova Aba"
-        Button.TextColor3 = Color3.new(0, 0, 0)
-        Button.Font = Enum.Font.SourceSans
-        Button.TextScaled = true
+    function window:CreateTab(tabName)
+        local TabButton = Instance.new("TextButton")
+        TabButton.Parent = TabsFrame
+        TabButton.Size = UDim2.new(1, -10, 0, 40)
+        TabButton.Position = UDim2.new(0, 5, 0, #TabsFrame:GetChildren() * 45)
+        TabButton.BackgroundColor3 = Color3.fromRGB(210, 180, 140)
+        TabButton.Text = tabName or "Nova Aba"
+        TabButton.Font = Enum.Font.SourceSans
+        TabButton.TextColor3 = Color3.new(0, 0, 0)
+        TabButton.TextScaled = true
+
+        local TabContent = Instance.new("Frame")
+        TabContent.Name = tabName .. "_Content"
+        TabContent.Parent = ContentFrame
+        TabContent.Size = UDim2.new(1, 0, 1, 0)
+        TabContent.Visible = false
+
+        TabButton.MouseButton1Click:Connect(function()
+            for _, v in pairs(ContentFrame:GetChildren()) do
+                v.Visible = false
+            end
+            TabContent.Visible = true
+        end)
 
         local tab = {}
-        tab.Button = Button
 
         function tab:AddButton(buttonName, callback)
             local NewButton = Instance.new("TextButton")
-            NewButton.Parent = Frame
+            NewButton.Parent = TabContent
+            NewButton.Size = UDim2.new(1, -10, 0, 40)
+            NewButton.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
             NewButton.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
-            NewButton.Size = UDim2.new(0, 280, 0, 40)
-            NewButton.Position = UDim2.new(0, 10, 0, 110)
             NewButton.Text = buttonName or "Novo Botão"
-            NewButton.TextColor3 = Color3.new(0, 0, 0)
             NewButton.Font = Enum.Font.SourceSans
+            NewButton.TextColor3 = Color3.new(0, 0, 0)
             NewButton.TextScaled = true
-
             NewButton.MouseButton1Click:Connect(function()
                 pcall(callback)
+            end)
+        end
+
+        function tab:AddToggle(toggleName, callback)
+            local Toggle = Instance.new("TextButton")
+            Toggle.Parent = TabContent
+            Toggle.Size = UDim2.new(1, -10, 0, 40)
+            Toggle.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
+            Toggle.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
+            Toggle.Text = toggleName .. ": OFF"
+            Toggle.Font = Enum.Font.SourceSans
+            Toggle.TextColor3 = Color3.new(0, 0, 0)
+            Toggle.TextScaled = true
+
+            local state = false
+            Toggle.MouseButton1Click:Connect(function()
+                state = not state
+                Toggle.Text = toggleName .. ": " .. (state and "ON" or "OFF")
+                pcall(callback, state)
+            end)
+        end
+
+        function tab:AddSlider(sliderName, min, max, callback)
+            local Slider = Instance.new("TextButton")
+            Slider.Parent = TabContent
+            Slider.Size = UDim2.new(1, -10, 0, 40)
+            Slider.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
+            Slider.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
+            Slider.Text = sliderName .. ": " .. tostring(min)
+            Slider.Font = Enum.Font.SourceSans
+            Slider.TextColor3 = Color3.new(0, 0, 0)
+            Slider.TextScaled = true
+
+            local value = min
+            Slider.MouseButton1Click:Connect(function()
+                value = value + 1
+                if value > max then value = min end
+                Slider.Text = sliderName .. ": " .. tostring(value)
+                pcall(callback, value)
+            end)
+        end
+
+        function tab:AddDropdown(dropdownName, options, callback)
+            local Dropdown = Instance.new("TextButton")
+            Dropdown.Parent = TabContent
+            Dropdown.Size = UDim2.new(1, -10, 0, 40)
+            Dropdown.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
+            Dropdown.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
+            Dropdown.Text = dropdownName .. ": " .. options[1]
+            Dropdown.Font = Enum.Font.SourceSans
+            Dropdown.TextColor3 = Color3.new(0, 0, 0)
+            Dropdown.TextScaled = true
+
+            local index = 1
+            Dropdown.MouseButton1Click:Connect(function()
+                index = index + 1
+                if index > #options then index = 1 end
+                Dropdown.Text = dropdownName .. ": " .. options[index]
+                pcall(callback, options[index])
             end)
         end
 
