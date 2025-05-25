@@ -5,6 +5,8 @@ function LunarLib:CreateWindow(title, theme)
     local Frame = Instance.new("Frame")
     local UICorner = Instance.new("UICorner")
     local Title = Instance.new("TextLabel")
+    local CloseButton = Instance.new("TextButton")
+    local MinimizeButton = Instance.new("TextButton")
 
     ScreenGui.Name = "LunarLibraryUI"
     ScreenGui.Parent = game.CoreGui
@@ -14,17 +16,56 @@ function LunarLib:CreateWindow(title, theme)
     Frame.BackgroundColor3 = Color3.fromRGB(194, 178, 128) -- Cor da areia
     Frame.Position = UDim2.new(0.3, 0, 0.3, 0)
     Frame.Size = UDim2.new(0, 300, 0, 200)
+    Frame.Active = true
+    Frame.Draggable = true
 
     UICorner.CornerRadius = UDim.new(0, 12)
     UICorner.Parent = Frame
 
     Title.Parent = Frame
     Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.Size = UDim2.new(1, -60, 0, 50)
+    Title.Position = UDim2.new(0, 10, 0, 0)
     Title.Font = Enum.Font.SourceSansBold
     Title.Text = title or "Lunar Library"
-    Title.TextColor3 = Color3.new(0, 0, 0) -- Letras pretas
+    Title.TextColor3 = Color3.new(0, 0, 0)
     Title.TextScaled = true
+
+    -- Botão Fechar
+    CloseButton.Parent = Frame
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -35, 0, 5)
+    CloseButton.Text = "X"
+    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+    CloseButton.TextColor3 = Color3.new(0, 0, 0)
+    CloseButton.Font = Enum.Font.SourceSansBold
+    CloseButton.TextScaled = true
+
+    -- Botão Minimizar
+    MinimizeButton.Parent = Frame
+    MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+    MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
+    MinimizeButton.Text = "_"
+    MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 255, 150)
+    MinimizeButton.TextColor3 = Color3.new(0, 0, 0)
+    MinimizeButton.Font = Enum.Font.SourceSansBold
+    MinimizeButton.TextScaled = true
+
+    local minimized = false
+    local originalSize = Frame.Size
+
+    MinimizeButton.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            Frame.Size = UDim2.new(0, 300, 0, 50)
+        else
+            Frame.Size = originalSize
+        end
+    end)
+
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
 
     local window = {}
     window.Frame = Frame
