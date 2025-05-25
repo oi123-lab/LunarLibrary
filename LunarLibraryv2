@@ -1,498 +1,338 @@
-local LunarLibrary = {}
+local Lunar = {}
+Lunar.__index = Lunar
 
--- Ícone da lua (use qualquer assetId que preferir)
-local MOON_ICON = "rbxassetid://12812648889"
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
-function LunarLibrary:CreateWindow(config)
-    local CoreGui = game:GetService("CoreGui")
-    local TweenService = game:GetService("TweenService")
+-- Configurações de estilo
+local COLORS = {
+    Background = Color3.fromRGB(20,20,20),
+    BackgroundTransparency = 0.3,
+    Header = Color3.fromRGB(15,15,15),
+    TextColor = Color3.new(1,1,1),
+    Accent = Color3.fromRGB(70,130,180), -- steel blue
+    ToggleOn = Color3.fromRGB(0,170,255),
+    ToggleOff = Color3.fromRGB(100,100,100)
+}
 
+-- Cria janela principal
+function Lunar:CreateWindow(title)
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "LunarLibrary"
     ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = CoreGui
+    ScreenGui.Parent = game:GetService("CoreGui")
 
     local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 480, 0, 320)
     MainFrame.Position = UDim2.new(0.5, -240, 0.5, -160)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    MainFrame.BackgroundTransparency = 0.3
+    MainFrame.BackgroundColor3 = COLORS.Background
+    MainFrame.BackgroundTransparency = COLORS.BackgroundTransparency
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
     MainFrame.Active = true
     MainFrame.Draggable = true
-    MainFrame.ZIndex = 5
-    MainFrame.Name = "MainFrame"
 
-    -- Cabeçalho pequeno
+    -- Cabeçalho
     local Header = Instance.new("Frame")
+    Header.Name = "Header"
     Header.Size = UDim2.new(1, 0, 0, 30)
-    Header.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-    Header.BackgroundTransparency = 0.3
+    Header.BackgroundColor3 = COLORS.Header
     Header.BorderSizePixel = 0
     Header.Parent = MainFrame
-    Header.Name = "Header"
 
-    -- Ícone da lua
-    local Icon = Instance.new("ImageLabel")
-    Icon.Size = UDim2.new(0, 22, 0, 22)
-    Icon.Position = UDim2.new(0, 10, 0, 4)
-    Icon.BackgroundTransparency = 1
-    Icon.Image = MOON_ICON
-    Icon.Parent = Header
-    Icon.Name = "MoonIcon"
+    -- Ícone lua preta no header (simples círculo preto)
+    local MoonIcon = Instance.new("Frame")
+    MoonIcon.Name = "MoonIcon"
+    MoonIcon.Size = UDim2.new(0, 20, 0, 20)
+    MoonIcon.Position = UDim2.new(0, 8, 0, 5)
+    MoonIcon.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    MoonIcon.BorderSizePixel = 0
+    MoonIcon.Parent = Header
+    MoonIcon.AnchorPoint = Vector2.new(0, 0)
 
-    -- Nome da Hub (texto)
-    local Title = Instance.new("TextLabel")
-    Title.Text = config.Name or "Minha Hub Lunar"
-    Title.Size = UDim2.new(1, -100, 1, 0)
-    Title.Position = UDim2.new(0, 40, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Font = Enum.Font.Gotham
-    Title.TextSize = 18
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = Header
-    Title.Name = "Title"
+    -- Texto do título
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Name = "TitleLabel"
+    TitleLabel.Text = title or "Lunar Library"
+    TitleLabel.Font = Enum.Font.Gotham
+    TitleLabel.TextSize = 16
+    TitleLabel.TextColor3 = COLORS.TextColor
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Position = UDim2.new(0, 36, 0, 5)
+    TitleLabel.Size = UDim2.new(0, 200, 0, 20)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = Header
 
-    -- Botão minimizar
-    local MinimizeBtn = Instance.new("TextButton")
-    MinimizeBtn.Size = UDim2.new(0, 30, 1, 0)
-    MinimizeBtn.Position = UDim2.new(1, -70, 0, 0)
-    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(230, 220, 60) -- amarelo
-    MinimizeBtn.Text = "-"
-    MinimizeBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
-    MinimizeBtn.Font = Enum.Font.GothamBold
-    MinimizeBtn.TextSize = 20
-    MinimizeBtn.BorderSizePixel = 0
-    MinimizeBtn.AutoButtonColor = false
-    MinimizeBtn.Parent = Header
-    MinimizeBtn.Name = "MinimizeBtn"
-    MinimizeBtn.Modal = false
-
-    -- Botão fechar
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
-    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(230, 60, 60) -- vermelho
-    CloseBtn.Text = "X"
-    CloseBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 20
-    CloseBtn.BorderSizePixel = 0
-    CloseBtn.AutoButtonColor = false
-    CloseBtn.Parent = Header
-    CloseBtn.Name = "CloseBtn"
-    CloseBtn.Modal = false
-
-    -- Subtitle abaixo do cabeçalho
-    local Subtitle = Instance.new("TextLabel")
-    Subtitle.Text = config.Subtitle or "O Melhor Hub"
-    Subtitle.Size = UDim2.new(1, -20, 0, 20)
-    Subtitle.Position = UDim2.new(0, 10, 0, 35)
-    Subtitle.BackgroundTransparency = 1
-    Subtitle.TextColor3 = Color3.fromRGB(220, 220, 220)
-    Subtitle.Font = Enum.Font.Gotham
-    Subtitle.TextSize = 14
-    Subtitle.TextXAlignment = Enum.TextXAlignment.Left
-    Subtitle.Parent = MainFrame
-    Subtitle.Name = "Subtitle"
-
-    -- Frame das abas (tabs)
-    local TabsFrame = Instance.new("ScrollingFrame")
-    TabsFrame.Size = UDim2.new(0, 130, 1, -70)
-    TabsFrame.Position = UDim2.new(0, 10, 0, 60)
-    TabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    TabsFrame.BackgroundTransparency = 0.25
-    TabsFrame.BorderSizePixel = 0
-    TabsFrame.ScrollBarThickness = 5
-    TabsFrame.Parent = MainFrame
-    TabsFrame.Name = "TabsFrame"
-    TabsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-
-    -- Frame do conteúdo
-    local ContentFrame = Instance.new("ScrollingFrame")
-    ContentFrame.Size = UDim2.new(1, -160, 1, -70)
-    ContentFrame.Position = UDim2.new(0, 150, 0, 60)
-    ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    ContentFrame.BackgroundTransparency = 0.25
-    ContentFrame.BorderSizePixel = 0
-    ContentFrame.ScrollBarThickness = 6
-    ContentFrame.Parent = MainFrame
-    ContentFrame.Name = "ContentFrame"
-    ContentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-
-    -- Função para limpar conteúdo atual
-    local function ClearContent()
-        for _, child in ipairs(ContentFrame:GetChildren()) do
-            if child:IsA("Frame") then
-                child:Destroy()
-            end
-        end
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    -- Botões no header: Minimizar e Fechar
+    local function CreateHeaderButton(text, posX)
+        local btn = Instance.new("TextButton")
+        btn.Text = text
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 18
+        btn.TextColor3 = COLORS.TextColor
+        btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        btn.BorderSizePixel = 0
+        btn.Size = UDim2.new(0, 30, 1, 0)
+        btn.Position = UDim2.new(1, posX, 0, 0)
+        btn.Parent = Header
+        return btn
     end
 
-    local Window = {}
+    local BtnMinimize = CreateHeaderButton("-", -65)
+    local BtnClose = CreateHeaderButton("X", -30)
 
-    -- Controle se está minimizado
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Name = "Content"
+    contentFrame.BackgroundTransparency = 1
+    contentFrame.Size = UDim2.new(1, 0, 1, -30)
+    contentFrame.Position = UDim2.new(0, 0, 0, 30)
+    contentFrame.Parent = MainFrame
+
+    -- Minimizar/Restaurar
     local minimized = false
-
-    -- Função animação minimizar
-    local function AnimateMinimize()
+    BtnMinimize.MouseButton1Click:Connect(function()
+        minimized = not minimized
         if minimized then
-            -- Restaurar
-            MainFrame:TweenSize(UDim2.new(0, 480, 0, 320), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.3, true)
-            Subtitle.Visible = true
-            TabsFrame.Visible = true
-            ContentFrame.Visible = true
-            Title.Text = config.Name or "Minha Hub Lunar"
-            minimized = false
+            contentFrame.Visible = false
+            MainFrame.Size = UDim2.new(0, 200, 0, 30)
+            TitleLabel.Text = title:sub(1, 12) .. "..."
         else
-            -- Minimizar para só mostrar cabeçalho e título pequeno
-            MainFrame:TweenSize(UDim2.new(0, 240, 0, 30), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.3, true)
-            Subtitle.Visible = false
-            TabsFrame.Visible = false
-            ContentFrame.Visible = false
-            Title.Text = config.Name or "Minha Hub Lunar"
-            minimized = true
+            contentFrame.Visible = true
+            MainFrame.Size = UDim2.new(0, 480, 0, 320)
+            TitleLabel.Text = title
         end
-    end
+    end)
 
-    -- Função animação fechar
-    local function AnimateClose()
-        local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
-        tween:Play()
-        tween.Completed:Connect(function()
-            ScreenGui:Destroy()
+    -- Fechar
+    BtnClose.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    local window = {}
+    window.MainFrame = MainFrame
+    window.Content = contentFrame
+    window.TitleLabel = TitleLabel
+    window.AddButton = function(self, btnText, callback)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -20, 0, 30)
+        btn.Position = UDim2.new(0, 10, 0, #self.Content:GetChildren() * 35)
+        btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        btn.BorderSizePixel = 0
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 16
+        btn.TextColor3 = COLORS.TextColor
+        btn.Text = btnText
+        btn.Parent = self.Content
+        btn.MouseButton1Click:Connect(function()
+            pcall(callback)
         end)
     end
 
-    MinimizeBtn.MouseButton1Click:Connect(function()
-        AnimateMinimize()
-    end)
+    window.AddToggle = function(self, label, default, callback)
+        local container = Instance.new("Frame")
+        container.Size = UDim2.new(1, -20, 0, 30)
+        container.Position = UDim2.new(0, 10, 0, #self.Content:GetChildren() * 35)
+        container.BackgroundTransparency = 1
+        container.Parent = self.Content
 
-    CloseBtn.MouseButton1Click:Connect(function()
-        AnimateClose()
-    end)
+        local text = Instance.new("TextLabel")
+        text.Text = label
+        text.TextColor3 = COLORS.TextColor
+        text.BackgroundTransparency = 1
+        text.Size = UDim2.new(1, -40, 1, 0)
+        text.Font = Enum.Font.Gotham
+        text.TextSize = 16
+        text.TextXAlignment = Enum.TextXAlignment.Left
+        text.Parent = container
 
-    -- Função para ajustar canvas size do conteúdo (dinâmico)
-    local function UpdateCanvasSize()
-        local contentHeight = 0
-        for _, child in ipairs(ContentFrame:GetChildren()) do
-            if child:IsA("Frame") then
-                contentHeight = contentHeight + child.AbsoluteSize.Y + 10
-            end
-        end
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
-    end
+        local toggle = Instance.new("Frame")
+        toggle.Size = UDim2.new(0, 30, 0, 20)
+        toggle.Position = UDim2.new(1, -30, 0, 5)
+        toggle.BackgroundColor3 = default and COLORS.ToggleOn or COLORS.ToggleOff
+        toggle.BorderSizePixel = 0
+        toggle.Parent = container
+        toggle.Active = true
 
-    -- Adicionar aba
-    function Window:AddTab(tabName)
-        local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(1, -10, 0, 30)
-        TabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        TabButton.BorderSizePixel = 0
-        TabButton.Text = tabName
-        TabButton.TextColor3 = Color3.fromRGB(230, 230, 230)
-        TabButton.Font = Enum.Font.Gotham
-        TabButton.TextSize = 16
-        TabButton.Parent = TabsFrame
-        TabButton.LayoutOrder = #TabsFrame:GetChildren()
+        local toggled = default
 
-        -- Atualizar tamanho do canvas das abas
-        TabsFrame.CanvasSize = UDim2.new(0, 0, 0, TabsFrame.CanvasSize.Y.Offset + 40)
-
-        local TabContent = Instance.new("Frame")
-        TabContent.Size = UDim2.new(1, 0, 1, 0)
-        TabContent.BackgroundTransparency = 1
-        TabContent.Parent = ContentFrame
-        TabContent.Visible = false
-        TabContent.Name = tabName .. "_Content"
-
-        -- Layout para os itens da aba
-        local Layout = Instance.new("UIListLayout")
-        Layout.SortOrder = Enum.SortOrder.LayoutOrder
-        Layout.Padding = UDim.new(0, 8)
-        Layout.Parent = TabContent
-
-        -- Botão para selecionar a aba
-        TabButton.MouseButton1Click:Connect(function()
-            -- Ocultar todas abas
-            for _, frame in pairs(ContentFrame:GetChildren()) do
-                if frame:IsA("Frame") then
-                    frame.Visible = false
-                end
-            end
-            -- Mostrar esta aba
-            TabContent.Visible = true
-
-            -- Atualiza visual da aba selecionada
-            for _, btn in pairs(TabsFrame:GetChildren()) do
-                if btn:IsA("TextButton") then
-                    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                end
-            end
-            TabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        end)
-
-        -- Seleciona a primeira aba criada automaticamente
-        if #TabsFrame:GetChildren() == 1 then
-            TabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            TabContent.Visible = true
-        end
-
-        local TabAPI = {}
-
-        -- Adicionar botão à aba
-        function TabAPI:AddButton(text, callback)
-            local Button = Instance.new("TextButton")
-            Button.Size = UDim2.new(1, 0, 0, 30)
-            Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            Button.BorderSizePixel = 0
-            Button.Text = text
-            Button.TextColor3 = Color3.fromRGB(240, 240, 240)
-            Button.Font = Enum.Font.Gotham
-            Button.TextSize = 16
-            Button.Parent = TabContent
-
-            Button.MouseButton1Click:Connect(function()
-                if callback then
-                    callback()
-                end
-            end)
-
-            UpdateCanvasSize()
-            return Button
-        end
-
-        -- Adicionar toggle à aba
-        function TabAPI:AddToggle(text, default, callback)
-            local ToggleFrame = Instance.new("Frame")
-            ToggleFrame.Size = UDim2.new(1, 0, 0, 30)
-            ToggleFrame.BackgroundTransparency = 1
-            ToggleFrame.Parent = TabContent
-
-            local Label = Instance.new("TextLabel")
-            Label.Text = text
-            Label.Size = UDim2.new(1, -40, 1, 0)
-            Label.BackgroundTransparency = 1
-            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-            Label.Font = Enum.Font.Gotham
-            Label.TextSize = 16
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = ToggleFrame
-
-            local ToggleBtn = Instance.new("TextButton")
-            ToggleBtn.Size = UDim2.new(0, 30, 0, 20)
-            ToggleBtn.Position = UDim2.new(1, -35, 0, 5)
-            ToggleBtn.BackgroundColor3 = default and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(80, 80, 80)
-            ToggleBtn.BorderSizePixel = 0
-            ToggleBtn.Text = ""
-            ToggleBtn.Parent = ToggleFrame
-
-            local toggled = default
-
-            ToggleBtn.MouseButton1Click:Connect(function()
+        toggle.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
                 toggled = not toggled
-                ToggleBtn.BackgroundColor3 = toggled and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(80, 80, 80)
-                if callback then
-                    callback(toggled)
-                end
-            end)
-
-            UpdateCanvasSize()
-            return ToggleBtn
-        end
-
-        -- Adicionar slider à aba
-        function TabAPI:AddSlider(text, min, max, default, callback)
-            local SliderFrame = Instance.new("Frame")
-            SliderFrame.Size = UDim2.new(1, 0, 0, 50)
-            SliderFrame.BackgroundTransparency = 1
-            SliderFrame.Parent = TabContent
-
-            local Label = Instance.new("TextLabel")
-            Label.Text = text .. ": " .. tostring(default)
-            Label.Size = UDim2.new(1, 0, 0, 20)
-            Label.BackgroundTransparency = 1
-            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-            Label.Font = Enum.Font.Gotham
-            Label.TextSize = 16
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = SliderFrame
-
-            local SliderBar = Instance.new("Frame")
-            SliderBar.Size = UDim2.new(1, 0, 0, 20)
-            SliderBar.Position = UDim2.new(0, 0, 0, 25)
-            SliderBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            SliderBar.BorderSizePixel = 0
-            SliderBar.Parent = SliderFrame
-
-            local Fill = Instance.new("Frame")
-            Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-            Fill.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-            Fill.BorderSizePixel = 0
-            Fill.Parent = SliderBar
-
-            local dragging = false
-
-            SliderBar.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    dragging = true
-                end
-            end)
-
-            SliderBar.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    dragging = false
-                end
-            end)
-
-            SliderBar.InputChanged:Connect(function(input)
-                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    local relativeX = math.clamp(input.Position.X - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X)
-                    local value = min + (relativeX / SliderBar.AbsoluteSize.X) * (max - min)
-                    value = math.floor(value * 100) / 100 -- 2 casas decimais
-                    Fill.Size = UDim2.new(relativeX / SliderBar.AbsoluteSize.X, 0, 1, 0)
-                    Label.Text = text .. ": " .. tostring(value)
-                    if callback then
-                        callback(value)
-                    end
-                end
-            end)
-
-            UpdateCanvasSize()
-            return SliderFrame
-        end
-
-        -- Adicionar dropdown à aba
-        function TabAPI:AddDropdown(text, options, callback)
-            local DropdownFrame = Instance.new("Frame")
-            DropdownFrame.Size = UDim2.new(1, 0, 0, 35)
-            DropdownFrame.BackgroundTransparency = 1
-            DropdownFrame.Parent = TabContent
-
-            local Label = Instance.new("TextLabel")
-            Label.Text = text
-            Label.Size = UDim2.new(1, -30, 1, 0)
-            Label.BackgroundTransparency = 1
-            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-            Label.Font = Enum.Font.Gotham
-            Label.TextSize = 16
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = DropdownFrame
-
-            local DropdownBtn = Instance.new("TextButton")
-            DropdownBtn.Size = UDim2.new(0, 25, 0, 25)
-            DropdownBtn.Position = UDim2.new(1, -25, 0, 5)
-            DropdownBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            DropdownBtn.BorderSizePixel = 0
-            DropdownBtn.Text = "▼"
-            DropdownBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
-            DropdownBtn.Font = Enum.Font.Gotham
-            DropdownBtn.TextSize = 16
-            DropdownBtn.Parent = DropdownFrame
-
-            local OptionsFrame = Instance.new("Frame")
-            OptionsFrame.Size = UDim2.new(1, 0, 0, 0)
-            OptionsFrame.Position = UDim2.new(0, 0, 1, 5)
-            OptionsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-            OptionsFrame.BorderSizePixel = 0
-            OptionsFrame.ClipsDescendants = true
-            OptionsFrame.Visible = false
-            OptionsFrame.Parent = DropdownFrame
-
-            local OptionsLayout = Instance.new("UIListLayout")
-            OptionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            OptionsLayout.Parent = OptionsFrame
-
-            local selectedValue = nil
-
-            local function CloseDropdown()
-                OptionsFrame.Visible = false
-                OptionsFrame.Size = UDim2.new(1, 0, 0, 0)
+                toggle.BackgroundColor3 = toggled and COLORS.ToggleOn or COLORS.ToggleOff
+                pcall(callback, toggled)
             end
-
-            DropdownBtn.MouseButton1Click:Connect(function()
-                OptionsFrame.Visible = not OptionsFrame.Visible
-                if OptionsFrame.Visible then
-                    -- Ajusta altura do frame conforme opções
-                    local count = #options
-                    OptionsFrame:TweenSize(UDim2.new(1, 0, 0, count * 30), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
-                else
-                    CloseDropdown()
-                end
-            end)
-
-            for _, option in ipairs(options) do
-                local OptionBtn = Instance.new("TextButton")
-                OptionBtn.Size = UDim2.new(1, 0, 0, 30)
-                OptionBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-                OptionBtn.BorderSizePixel = 0
-                OptionBtn.Text = option
-                OptionBtn.TextColor3 = Color3.fromRGB(230, 230, 230)
-                OptionBtn.Font = Enum.Font.Gotham
-                OptionBtn.TextSize = 16
-                OptionBtn.Parent = OptionsFrame
-
-                OptionBtn.MouseButton1Click:Connect(function()
-                    selectedValue = option
-                    Label.Text = text .. ": " .. selectedValue
-                    CloseDropdown()
-                    if callback then
-                        callback(selectedValue)
-                    end
-                end)
-            end
-
-            UpdateCanvasSize()
-            return DropdownBtn
-        end
-
-        -- Adicionar textbox à aba
-        function TabAPI:AddTextbox(text, placeholder, callback)
-            local TextboxFrame = Instance.new("Frame")
-            TextboxFrame.Size = UDim2.new(1, 0, 0, 40)
-            TextboxFrame.BackgroundTransparency = 1
-            TextboxFrame.Parent = TabContent
-
-            local Label = Instance.new("TextLabel")
-            Label.Text = text
-            Label.Size = UDim2.new(1, -10, 0, 15)
-            Label.BackgroundTransparency = 1
-            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-            Label.Font = Enum.Font.Gotham
-            Label.TextSize = 14
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = TextboxFrame
-
-            local TextBox = Instance.new("TextBox")
-            TextBox.Size = UDim2.new(1, 0, 0, 25)
-            TextBox.Position = UDim2.new(0, 0, 0, 15)
-            TextBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            TextBox.BorderSizePixel = 0
-            TextBox.TextColor3 = Color3.fromRGB(230, 230, 230)
-            TextBox.ClearTextOnFocus = false
-            TextBox.PlaceholderText = placeholder or ""
-            TextBox.Font = Enum.Font.Gotham
-            TextBox.TextSize = 16
-            TextBox.Parent = TextboxFrame
-
-            TextBox.FocusLost:Connect(function(enterPressed)
-                if enterPressed and callback then
-                    callback(TextBox.Text)
-                end
-            end)
-
-            UpdateCanvasSize()
-            return TextBox
-        end
-
-        return TabAPI
+        end)
     end
 
-    return Window
+    window.AddSlider = function(self, label, min, max, default, callback)
+        local container = Instance.new("Frame")
+        container.Size = UDim2.new(1, -20, 0, 40)
+        container.Position = UDim2.new(0, 10, 0, #self.Content:GetChildren() * 45)
+        container.BackgroundTransparency = 1
+        container.Parent = self.Content
+
+        local text = Instance.new("TextLabel")
+        text.Text = label .. ": " .. tostring(default)
+        text.TextColor3 = COLORS.TextColor
+        text.BackgroundTransparency = 1
+        text.Size = UDim2.new(1, 0, 0, 20)
+        text.Font = Enum.Font.Gotham
+        text.TextSize = 16
+        text.TextXAlignment = Enum.TextXAlignment.Left
+        text.Parent = container
+
+        local sliderBg = Instance.new("Frame")
+        sliderBg.Size = UDim2.new(1, 0, 0, 10)
+        sliderBg.Position = UDim2.new(0, 0, 0, 25)
+        sliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        sliderBg.BorderSizePixel = 0
+        sliderBg.Parent = container
+
+        local sliderFill = Instance.new("Frame")
+        sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+        sliderFill.BackgroundColor3 = COLORS.Accent
+        sliderFill.BorderSizePixel = 0
+        sliderFill.Parent = sliderBg
+
+        local dragging = false
+        sliderBg.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = true
+            end
+        end)
+
+        sliderBg.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = false
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                local relativeX = math.clamp(input.Position.X - sliderBg.AbsolutePosition.X, 0, sliderBg.AbsoluteSize.X)
+                local value = min + (relativeX / sliderBg.AbsoluteSize.X) * (max - min)
+                value = math.floor(value * 100) / 100
+                sliderFill.Size = UDim2.new(relativeX / sliderBg.AbsoluteSize.X, 0, 1, 0)
+                text.Text = label .. ": " .. tostring(value)
+                pcall(callback, value)
+            end
+        end)
+    end
+
+    window.AddTextbox = function(self, label, placeholder, callback)
+        local container = Instance.new("Frame")
+        container.Size = UDim2.new(1, -20, 0, 35)
+        container.Position = UDim2.new(0, 10, 0, #self.Content:GetChildren() * 40)
+        container.BackgroundTransparency = 1
+        container.Parent = self.Content
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Text = label
+        textLabel.TextColor3 = COLORS.TextColor
+        textLabel.BackgroundTransparency = 1
+        textLabel.Size = UDim2.new(1, -150, 1, 0)
+        textLabel.Font = Enum.Font.Gotham
+        textLabel.TextSize = 16
+        textLabel.TextXAlignment = Enum.TextXAlignment.Left
+        textLabel.Parent = container
+
+        local textbox = Instance.new("TextBox")
+        textbox.Size = UDim2.new(0, 140, 1, 0)
+        textbox.Position = UDim2.new(1, -140, 0, 0)
+        textbox.Text = ""
+        textbox.PlaceholderText = placeholder or ""
+        textbox.ClearTextOnFocus = false
+        textbox.Font = Enum.Font.Gotham
+        textbox.TextSize = 16
+        textbox.TextColor3 = COLORS.TextColor
+        textbox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        textbox.BorderSizePixel = 0
+        textbox.Parent = container
+
+        textbox.FocusLost:Connect(function(enterPressed)
+            if enterPressed then
+                pcall(callback, textbox.Text)
+            end
+        end)
+    end
+
+    window.AddDropdown = function(self, label, options, callback)
+        local container = Instance.new("Frame")
+        container.Size = UDim2.new(1, -20, 0, 35)
+        container.Position = UDim2.new(0, 10, 0, #self.Content:GetChildren() * 40)
+        container.BackgroundTransparency = 1
+        container.Parent = self.Content
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Text = label
+        textLabel.TextColor3 = COLORS.TextColor
+        textLabel.BackgroundTransparency = 1
+        textLabel.Size = UDim2.new(1, -150, 1, 0)
+        textLabel.Font = Enum.Font.Gotham
+        textLabel.TextSize = 16
+        textLabel.TextXAlignment = Enum.TextXAlignment.Left
+        textLabel.Parent = container
+
+        local dropdownBtn = Instance.new("TextButton")
+        dropdownBtn.Size = UDim2.new(0, 140, 1, 0)
+        dropdownBtn.Position = UDim2.new(1, -140, 0, 0)
+        dropdownBtn.Text = options[1] or "Select"
+        dropdownBtn.Font = Enum.Font.Gotham
+        dropdownBtn.TextSize = 16
+        dropdownBtn.TextColor3 = COLORS.TextColor
+        dropdownBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        dropdownBtn.BorderSizePixel = 0
+        dropdownBtn.Parent = container
+
+        local dropdownOpen = false
+        local dropdownList = Instance.new("Frame")
+        dropdownList.Size = UDim2.new(0, 140, 0, math.min(5, #options) * 30)
+        dropdownList.Position = UDim2.new(0, 0, 1, 0)
+        dropdownList.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        dropdownList.BorderSizePixel = 0
+        dropdownList.Visible = false
+        dropdownList.ClipsDescendants = true
+        dropdownList.Parent = dropdownBtn
+
+        local uiListLayout = Instance.new("UIListLayout")
+        uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        uiListLayout.Parent = dropdownList
+
+        for i, option in ipairs(options) do
+            local optBtn = Instance.new("TextButton")
+            optBtn.Size = UDim2.new(1, 0, 0, 30)
+            optBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+            optBtn.BorderSizePixel = 0
+            optBtn.Text = option
+            optBtn.Font = Enum.Font.Gotham
+            optBtn.TextSize = 16
+            optBtn.TextColor3 = COLORS.TextColor
+            optBtn.Parent = dropdownList
+
+            optBtn.MouseEnter:Connect(function()
+                optBtn.BackgroundColor3 = COLORS.Accent
+            end)
+            optBtn.MouseLeave:Connect(function()
+                optBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+            end)
+
+            optBtn.MouseButton1Click:Connect(function()
+                dropdownBtn.Text = option
+                dropdownList.Visible = false
+                dropdownOpen = false
+                pcall(callback, option)
+            end)
+        end
+
+        dropdownBtn.MouseButton1Click:Connect(function()
+            dropdownOpen = not dropdownOpen
+            dropdownList.Visible = dropdownOpen
+        end)
+    end
+
+    return setmetatable(window, Lunar)
 end
 
-return LunarLibrary
+return Lunar
