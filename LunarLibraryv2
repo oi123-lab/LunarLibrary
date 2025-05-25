@@ -1,181 +1,36 @@
 local LunarLib = {}
 
-function LunarLib:CreateWindow(title, theme)
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "LunarLibraryUI"
-    ScreenGui.Parent = game.CoreGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local Players = game:GetService("Players") local player = Players.LocalPlayer local mouse = player:GetMouse()
 
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(194, 178, 128) -- Cor da areia
-    MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-    MainFrame.Size = UDim2.new(0, 500, 0, 400)
-    MainFrame.Active = true
-    MainFrame.Draggable = true
+local ScreenGui = Instance.new("ScreenGui") ScreenGui.Name = "LunarLib" ScreenGui.Parent = game.CoreGui
 
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 12)
-    UICorner.Parent = MainFrame
+local MainFrame = Instance.new("Frame") MainFrame.Size = UDim2.new(0, 400, 0, 300) MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150) MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) MainFrame.BackgroundTransparency = 0.3 MainFrame.Active = true MainFrame.Draggable = true MainFrame.Parent = ScreenGui
 
-    -- Título
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = MainFrame
-    TitleLabel.Size = UDim2.new(1, 0, 0, 50)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = title or "Lunar Library"
-    TitleLabel.Font = Enum.Font.SourceSansBold
-    TitleLabel.TextColor3 = Color3.new(0, 0, 0)
-    TitleLabel.TextScaled = true
+local UICorner = Instance.new("UICorner") UICorner.CornerRadius = UDim.new(0, 12) UICorner.Parent = MainFrame
 
-    -- Tabs
-    local TabsFrame = Instance.new("Frame")
-    TabsFrame.Name = "Tabs"
-    TabsFrame.Parent = MainFrame
-    TabsFrame.BackgroundColor3 = Color3.fromRGB(210, 180, 140)
-    TabsFrame.Position = UDim2.new(0, 0, 0, 50)
-    TabsFrame.Size = UDim2.new(0, 120, 1, -50)
+local UIStroke = Instance.new("UIStroke") UIStroke.Thickness = 2 UIStroke.Color = Color3.fromRGB(50,50,50) UIStroke.Parent = MainFrame
 
-    -- Conteúdo
-    local ContentFrame = Instance.new("Frame")
-    ContentFrame.Name = "Content"
-    ContentFrame.Parent = MainFrame
-    ContentFrame.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
-    ContentFrame.Position = UDim2.new(0, 130, 0, 50)
-    ContentFrame.Size = UDim2.new(1, -140, 1, -60)
+local TabsFrame = Instance.new("Frame") TabsFrame.Size = UDim2.new(0, 100, 1, 0) TabsFrame.Position = UDim2.new(0, 0, 0, 0) TabsFrame.BackgroundTransparency = 1 TabsFrame.Parent = MainFrame
 
-    -- Minimizar botão
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Name = "ToggleButton"
-    ToggleButton.Parent = ScreenGui
-    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-    ToggleButton.Position = UDim2.new(0, 10, 0, 10) -- Canto da tela
-    ToggleButton.Text = "-"
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 150)
-    ToggleButton.TextColor3 = Color3.new(0, 0, 0)
-    ToggleButton.Font = Enum.Font.SourceSansBold
-    ToggleButton.TextScaled = true
-    ToggleButton.Active = true
-    ToggleButton.Draggable = true
+local ContentFrame = Instance.new("Frame") ContentFrame.Size = UDim2.new(1, -100, 1, -40) ContentFrame.Position = UDim2.new(0, 100, 0, 60) ContentFrame.BackgroundTransparency = 1 ContentFrame.Parent = MainFrame
 
-    local minimized = false
-    ToggleButton.MouseButton1Click:Connect(function()
-        minimized = not minimized
-        MainFrame.Visible = not minimized
-        if minimized then
-            ToggleButton.Text = "+"
-        else
-            ToggleButton.Text = "-"
-        end
-    end)
+local CloseButton = Instance.new("TextButton") CloseButton.Parent = MainFrame CloseButton.Size = UDim2.new(0, 30, 0, 30) CloseButton.Position = UDim2.new(1, -35, 0, 5) CloseButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0) CloseButton.Text = "X" CloseButton.TextColor3 = Color3.new(1,1,1) CloseButton.TextScaled = true CloseButton.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
-    local window = {}
+local MinimizeButton = Instance.new("TextButton") MinimizeButton.Parent = MainFrame MinimizeButton.Size = UDim2.new(0, 30, 0, 30) MinimizeButton.Position = UDim2.new(1, -70, 0, 5) MinimizeButton.BackgroundColor3 = Color3.fromRGB(50,50,0) MinimizeButton.Text = "-" MinimizeButton.TextColor3 = Color3.new(1,1,1) MinimizeButton.TextScaled = true MinimizeButton.MouseButton1Click:Connect(function() TabsFrame.Visible = not TabsFrame.Visible ContentFrame.Visible = not ContentFrame.Visible end)
 
-    function window:CreateTab(tabName)
-        local TabButton = Instance.new("TextButton")
-        TabButton.Parent = TabsFrame
-        TabButton.Size = UDim2.new(1, -10, 0, 40)
-        TabButton.Position = UDim2.new(0, 5, 0, #TabsFrame:GetChildren() * 45)
-        TabButton.BackgroundColor3 = Color3.fromRGB(210, 180, 140)
-        TabButton.Text = tabName or "Nova Aba"
-        TabButton.Font = Enum.Font.SourceSans
-        TabButton.TextColor3 = Color3.new(0, 0, 0)
-        TabButton.TextScaled = true
+local function createTab(name) local TabButton = Instance.new("TextButton") TabButton.Parent = TabsFrame TabButton.Size = UDim2.new(1, 0, 0, 40) TabButton.BackgroundColor3 = Color3.fromRGB(30,30,30) TabButton.BackgroundTransparency = 0.3 TabButton.Text = name TabButton.Font = Enum.Font.SourceSans TabButton.TextColor3 = Color3.new(1,1,1) TabButton.TextScaled = true
 
-        local TabContent = Instance.new("Frame")
-        TabContent.Name = tabName .. "_Content"
-        TabContent.Parent = ContentFrame
-        TabContent.Size = UDim2.new(1, 0, 1, 0)
-        TabContent.Visible = false
+local TabContent = Instance.new("Frame") TabContent.Size = UDim2.new(1, 0, 1, 0) TabContent.BackgroundTransparency = 1 TabContent.Visible = false TabContent.Parent = ContentFrame TabButton.MouseButton1Click:Connect(function() for _, tab in ipairs(ContentFrame:GetChildren()) do tab.Visible = false end TabContent.Visible = true end) local tab = {} function tab:AddButton(text, callback) local Button = Instance.new("TextButton") Button.Parent = TabContent Button.Size = UDim2.new(1, -10, 0, 40) Button.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45) Button.BackgroundColor3 = Color3.fromRGB(30,30,30) Button.BackgroundTransparency = 0.3 Button.Text = text Button.Font = Enum.Font.SourceSans Button.TextColor3 = Color3.new(1,1,1) Button.TextScaled = true Button.MouseButton1Click:Connect(callback) end function tab:AddToggle(text, callback) local state = false local Toggle = Instance.new("TextButton") Toggle.Parent = TabContent Toggle.Size = UDim2.new(1, -10, 0, 40) Toggle.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45) Toggle.BackgroundColor3 = Color3.fromRGB(30,30,30) Toggle.BackgroundTransparency = 0.3 Toggle.Text = text .. ": OFF" Toggle.Font = Enum.Font.SourceSans Toggle.TextColor3 = Color3.new(1,1,1) Toggle.TextScaled = true Toggle.MouseButton1Click:Connect(function() state = not state Toggle.Text = text .. ": " .. (state and "ON" or "OFF") callback(state) end) end function tab:AddSlider(text, min, max, callback) local value = min local Slider = Instance.new("TextButton") Slider.Parent = TabContent Slider.Size = UDim2.new(1, -10, 0, 40) Slider.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45) Slider.BackgroundColor3 = Color3.fromRGB(30,30,30) Slider.BackgroundTransparency = 0.3 Slider.Text = text .. ": " .. tostring(value) Slider.Font = Enum.Font.SourceSans Slider.TextColor3 = Color3.new(1,1,1) Slider.TextScaled = true Slider.MouseButton1Click:Connect(function() value = value + 1 if value > max then value = min end Slider.Text = text .. ": " .. tostring(value) callback(value) end) end function tab:AddDropdown(text, options, callback) local Dropdown = Instance.new("TextButton") Dropdown.Parent = TabContent Dropdown.Size = UDim2.new(1, -10, 0, 40) Dropdown.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45) Dropdown.BackgroundColor3 = Color3.fromRGB(30,30,30) Dropdown.BackgroundTransparency = 0.3 Dropdown.Text = text .. ": [Selecionar]" Dropdown.Font = Enum.Font.SourceSans Dropdown.TextColor3 = Color3.new(1,1,1) Dropdown.TextScaled = true local OptionsFrame = Instance.new("Frame") OptionsFrame.Parent = Dropdown OptionsFrame.Position = UDim2.new(0, 0, 1, 0) OptionsFrame.Size = UDim2.new(1, 0, 0, #options * 30) OptionsFrame.BackgroundColor3 = Color3.fromRGB(20,20,20) OptionsFrame.BackgroundTransparency = 0.4 OptionsFrame.Visible = false local UIList = Instance.new("UIListLayout") UIList.Parent = OptionsFrame for _, option in ipairs(options) do local Opt = Instance.new("TextButton") Opt.Parent = OptionsFrame Opt.Size = UDim2.new(1, 0, 0, 30) Opt.BackgroundColor3 = Color3.fromRGB(50,50,50) Opt.BackgroundTransparency = 0.5 Opt.Text = option Opt.Font = Enum.Font.SourceSans Opt.TextColor3 = Color3.new(1,1,1) Opt.TextScaled = true Opt.MouseButton1Click:Connect(function() Dropdown.Text = text .. ": " .. option OptionsFrame.Visible = false callback(option) end) end Dropdown.MouseButton1Click:Connect(function() OptionsFrame.Visible = not OptionsFrame.Visible end) end return tab 
 
-        TabButton.MouseButton1Click:Connect(function()
-            for _, v in pairs(ContentFrame:GetChildren()) do
-                v.Visible = false
-            end
-            TabContent.Visible = true
-        end)
+end
 
-        local tab = {}
+function LunarLib:CreateTab(name) return createTab(name) end
 
-        function tab:AddButton(buttonName, callback)
-            local NewButton = Instance.new("TextButton")
-            NewButton.Parent = TabContent
-            NewButton.Size = UDim2.new(1, -10, 0, 40)
-            NewButton.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
-            NewButton.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
-            NewButton.Text = buttonName or "Novo Botão"
-            NewButton.Font = Enum.Font.SourceSans
-            NewButton.TextColor3 = Color3.new(0, 0, 0)
-            NewButton.TextScaled = true
-            NewButton.MouseButton1Click:Connect(function()
-                pcall(callback)
-            end)
-        end
+function LunarLib:CreateWindow(title, subtitle) local TitleLabel = Instance.new("TextLabel") TitleLabel.Parent = MainFrame TitleLabel.Size = UDim2.new(1, -80, 0, 30) TitleLabel.Position = UDim2.new(0, 10, 0, 5) TitleLabel.BackgroundTransparency = 1 TitleLabel.Text = title TitleLabel.Font = Enum.Font.SourceSansBold TitleLabel.TextColor3 = Color3.new(1,1,1) TitleLabel.TextScaled = true
 
-        function tab:AddToggle(toggleName, callback)
-            local Toggle = Instance.new("TextButton")
-            Toggle.Parent = TabContent
-            Toggle.Size = UDim2.new(1, -10, 0, 40)
-            Toggle.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
-            Toggle.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
-            Toggle.Text = toggleName .. ": OFF"
-            Toggle.Font = Enum.Font.SourceSans
-            Toggle.TextColor3 = Color3.new(0, 0, 0)
-            Toggle.TextScaled = true
+local SubTitleLabel = Instance.new("TextLabel") SubTitleLabel.Parent = MainFrame SubTitleLabel.Size = UDim2.new(1, -80, 0, 20) SubTitleLabel.Position = UDim2.new(0, 10, 0, 35) SubTitleLabel.BackgroundTransparency = 1 SubTitleLabel.Text = subtitle SubTitleLabel.Font = Enum.Font.SourceSans SubTitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200) SubTitleLabel.TextScaled = true 
 
-            local state = false
-            Toggle.MouseButton1Click:Connect(function()
-                state = not state
-                Toggle.Text = toggleName .. ": " .. (state and "ON" or "OFF")
-                pcall(callback, state)
-            end)
-        end
-
-        function tab:AddSlider(sliderName, min, max, callback)
-            local Slider = Instance.new("TextButton")
-            Slider.Parent = TabContent
-            Slider.Size = UDim2.new(1, -10, 0, 40)
-            Slider.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
-            Slider.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
-            Slider.Text = sliderName .. ": " .. tostring(min)
-            Slider.Font = Enum.Font.SourceSans
-            Slider.TextColor3 = Color3.new(0, 0, 0)
-            Slider.TextScaled = true
-
-            local value = min
-            Slider.MouseButton1Click:Connect(function()
-                value = value + 1
-                if value > max then value = min end
-                Slider.Text = sliderName .. ": " .. tostring(value)
-                pcall(callback, value)
-            end)
-        end
-
-        function tab:AddDropdown(dropdownName, options, callback)
-            local Dropdown = Instance.new("TextButton")
-            Dropdown.Parent = TabContent
-            Dropdown.Size = UDim2.new(1, -10, 0, 40)
-            Dropdown.Position = UDim2.new(0, 5, 0, #TabContent:GetChildren() * 45)
-            Dropdown.BackgroundColor3 = Color3.fromRGB(222, 184, 135)
-            Dropdown.Text = dropdownName .. ": " .. options[1]
-            Dropdown.Font = Enum.Font.SourceSans
-            Dropdown.TextColor3 = Color3.new(0, 0, 0)
-            Dropdown.TextScaled = true
-
-            local index = 1
-            Dropdown.MouseButton1Click:Connect(function()
-                index = index + 1
-                if index > #options then index = 1 end
-                Dropdown.Text = dropdownName .. ": " .. options[index]
-                pcall(callback, options[index])
-            end)
-        end
-
-        return tab
-    end
-
-    return window
 end
 
 return LunarLib
+
